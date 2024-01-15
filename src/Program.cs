@@ -7,7 +7,7 @@ const string MetadataFileName = "aniqtmetadata";
 
 if ( args.Length != 0 ) {
     var operation = args[0];
-    switch (operation) {
+    switch ( operation ) {
         case "clearmeta":
             var clearMetadataFilePath = Path.Combine ( Environment.GetFolderPath ( Environment.SpecialFolder.LocalApplicationData ), MetadataFileName );
             File.Delete ( clearMetadataFilePath );
@@ -40,7 +40,7 @@ if ( File.Exists ( metadataFilePath ) ) installedVersion = File.ReadAllText ( me
 
 if ( installedVersion == latestRelease!.TagName ) {
     Console.WriteLine ( $"Installed latest version {installedVersion}, not need to action" );
-    RunAnilibriApplication ( installedVersion );
+    RunAnilibriaApplication ( installedVersion );
     return;
 }
 
@@ -53,7 +53,7 @@ if ( windowsAsset == null ) {
 
 var achiveFileName = latestRelease.TagName + ".zip";
 
-Console.WriteLine ( $"Start download archive" );
+Console.WriteLine ( $"Start download archive/Скачивание архива пожалуйста подождите" );
 
 try {
     var assetResponse = await httpClient.GetAsync ( windowsAsset!.BrowserDownloadUrl );
@@ -61,7 +61,7 @@ try {
     var archiveFile = File.OpenWrite ( achiveFileName );
     await stream.CopyToAsync ( archiveFile );
     archiveFile.Close ();
-} catch(Exception ex) {
+} catch ( Exception ex ) {
     HandleError ( $"Error while downloading archive {ex.Message}" );
 }
 
@@ -97,26 +97,25 @@ try {
     HandleError ( $"Error while write metadata file {metadataFilePath}: {ex.Message}" );
 }
 
-installedVersion = latestRelease.TagName;
-
-RunAnilibriApplication (targetDirectory);
+RunAnilibriaApplication ( latestRelease.TagName );
 
 Console.WriteLine ( "Installer completed sucessfully" );
 
-void RunAnilibriApplication(string targetFolder) {
+void RunAnilibriaApplication ( string targetFolder ) {
     var executableFile = Path.Combine ( targetFolder, "AniLibria.exe" );
-    if (!File.Exists( executableFile ) ) HandleError ( "File AniLibria.exe with desire version not found on disk!" );
+    if ( !File.Exists ( executableFile ) ) HandleError ( "File AniLibria.exe with desire version not found on disk!" );
 
     Process.Start (
         new ProcessStartInfo {
             WorkingDirectory = targetFolder,
-            FileName = Path.Combine( targetFolder, "AniLibria.exe"),
+            FileName = Path.Combine ( targetFolder, "AniLibria.exe" ),
         }
     );
 }
 
-void HandleError(string message) {
+void HandleError ( string message ) {
     Console.WriteLine ( message );
+    Console.ReadKey ();
     Environment.Exit ( 100 );
 }
 

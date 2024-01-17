@@ -11,6 +11,7 @@ if ( args.Length != 0 ) {
         case "clearmeta":
             var clearMetadataFilePath = Path.Combine ( Environment.GetFolderPath ( Environment.SpecialFolder.LocalApplicationData ), MetadataFileName );
             File.Delete ( clearMetadataFilePath );
+            Environment.Exit ( 0 );
             break;
     }
 }

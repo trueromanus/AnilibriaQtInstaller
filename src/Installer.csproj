@@ -11,6 +11,7 @@
 		<Title>Installer</Title>
 		<ApplicationIcon>logo.ico</ApplicationIcon>
 		<AssemblyName>AniLibriaQtLauncher</AssemblyName>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

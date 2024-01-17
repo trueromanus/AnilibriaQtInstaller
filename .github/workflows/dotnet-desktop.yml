@@ -20,10 +20,10 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore src/Installer.csproj
-    - name: Build application
-      run: dotnet build -c Release src/Installer.csproj
+    - name: Publish application
+      run: dotnet publish -r win-x64 -c Release --self-contained true src/Installer.csproj
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: BuildedExecutable
-        path: src/bin/Release/net8.0/win-x64/AniLibriaQtLauncher.exe
+        path: src/bin/Release/net8.0/win-x64/publish/AniLibriaQtLauncher.exe

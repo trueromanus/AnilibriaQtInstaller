@@ -103,7 +103,7 @@ Console.WriteLine ( "Installer completed sucessfully" );
 
 void RunAnilibriaApplication ( string targetFolder ) {
     var executableFile = Path.Combine ( targetFolder, "AniLibria.exe" );
-    if ( !File.Exists ( executableFile ) ) HandleError ( "File AniLibria.exe with desire version not found on disk!" );
+    if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLibria.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath(targetFolder)}" );
 
     Process.Start (
         new ProcessStartInfo {
@@ -115,6 +115,7 @@ void RunAnilibriaApplication ( string targetFolder ) {
 
 void HandleError ( string message ) {
     Console.WriteLine ( message );
+    Console.WriteLine ( "Пожалуйста сообщите разработчику об ошибке в группу https://t.me/+Le_oNL4Tw745YWUy прислав скриншот этого экрана" );
     Console.ReadKey ();
     Environment.Exit ( 100 );
 }

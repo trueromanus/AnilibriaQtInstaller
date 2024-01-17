@@ -1,7 +1,9 @@
 ﻿using Installer;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using static Helpers;
 
 const string MetadataFileName = "aniqtmetadata";
 
@@ -16,14 +18,17 @@ if ( args.Length != 0 ) {
     }
 }
 
-Console.WriteLine ( "Installer started" );
+Console.WriteLine ( "AnilibriaQtInstaller version 0.0.1 started" );
 
-try {
-    foreach ( var process in Process.GetProcessesByName ( "AniLibria" ) ) {
-        process.Kill ();
+if ( !OperatingSystem.IsMacOS () ) {
+    // for linux and windows need to check runned application
+    try {
+        foreach ( var process in Process.GetProcessesByName ( "AniLibria" ) ) {
+            process.Kill ();
+        }
+    } catch ( Exception ex ) {
+        HandleError ( $"Can't kill instances of application: {ex.Message}" );
     }
-} catch ( Exception ex ) {
-    HandleError ( $"Can't kill instances of application: {ex.Message}" );
 }
 
 var httpClient = new HttpClient ();
@@ -47,23 +52,38 @@ if ( installedVersion == latestRelease!.TagName ) {
 
 Console.WriteLine ( $"Start to install version {latestRelease.TagName}" );
 
-var windowsAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ( "windows" ) );
-if ( windowsAsset == null ) {
-    HandleError ( $"Can't find window asser for download!" );
+var achiveFileName = "";
+VersionAsset? downloadAsset = null;
+
+if ( OperatingSystem.IsMacOS () ) {
+    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ( "macos" ) );
+
+    achiveFileName = latestRelease.TagName + ".dmg";
+}
+if ( OperatingSystem.IsLinux () ) {
+    var isArm64 = RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ( "flatpak" ) && a.Name.Contains ( isArm64 ? "aarch64" : "x86_64" ) );
+
+    achiveFileName = latestRelease.TagName + ".flatpak";
+}
+if ( OperatingSystem.IsWindows () ) {
+    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ( "windows" ) );
+
+    achiveFileName = latestRelease.TagName + ".zip";
 }
 
-var achiveFileName = latestRelease.TagName + ".zip";
+if ( downloadAsset == null ) HandleError ( $"Can't find window asser for download!" );
 
 Console.WriteLine ( $"Start download archive/Скачивание архива пожалуйста подождите" );
 
 try {
-    var assetResponse = await httpClient.GetAsync ( windowsAsset!.BrowserDownloadUrl );
+    var assetResponse = await httpClient.GetAsync ( downloadAsset!.BrowserDownloadUrl );
     var stream = await assetResponse.Content.ReadAsStreamAsync ();
     var archiveFile = File.OpenWrite ( achiveFileName );
     await stream.CopyToAsync ( archiveFile );
     archiveFile.Close ();
 } catch ( Exception ex ) {
-    HandleError ( $"Error while downloading archive {ex.Message}" );
+    HandleError ( $"Error while downloading version {ex.Message}" );
 }
 
 var targetDirectory = Path.Combine ( latestRelease.TagName + "/" );
@@ -76,14 +96,23 @@ try {
     HandleError ( $"Error while creating directory {targetDirectory}: {ex.Message}" );
 }
 
-Console.WriteLine ( $"Extract archive to new version directory" );
-
-try {
-    using var target = File.OpenRead ( achiveFileName );
-    using var newArchive = new ZipArchive ( target, ZipArchiveMode.Read );
-    newArchive.ExtractToDirectory ( targetDirectory, overwriteFiles: true );
-} catch ( Exception ex ) {
-    HandleError ( $"Error while extracting achive {targetDirectory}: {ex.Message}" );
+if ( OperatingSystem.IsWindows () ) {
+    Console.WriteLine ( $"Extract archive to new version directory" );
+    try {
+        using var target = File.OpenRead ( achiveFileName );
+        using var newArchive = new ZipArchive ( target, ZipArchiveMode.Read );
+        newArchive.ExtractToDirectory ( targetDirectory, overwriteFiles: true );
+    } catch ( Exception ex ) {
+        HandleError ( $"Error while extracting achive {targetDirectory}: {ex.Message}" );
+    }
+}
+if ( OperatingSystem.IsMacOS () ) {
+    Console.WriteLine ( $"Mount DMG file as virtual disk" );
+    await RunCommandInConsoleAndWait ( latestRelease.TagName, $"hdiutil attach {latestRelease.TagName}.dmg" );
+    //hdiutil detach /dev/disk1s2
+}
+if ( OperatingSystem.IsLinux () ) {
+    await RunCommandInConsoleAndWait ( latestRelease.TagName, $"flatpak install --user {latestRelease.TagName}.flatpak" );
 }
 
 try {
@@ -102,9 +131,9 @@ RunAnilibriaApplication ( latestRelease.TagName );
 
 Console.WriteLine ( "Installer completed sucessfully" );
 
-void RunAnilibriaApplication ( string targetFolder ) {
+static void RunAnilibriaApplication ( string targetFolder ) {
     var executableFile = Path.Combine ( targetFolder, "AniLibria.exe" );
-    if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLibria.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath(targetFolder)}" );
+    if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLibria.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath ( targetFolder )}" );
 
     Process.Start (
         new ProcessStartInfo {
@@ -113,12 +142,3 @@ void RunAnilibriaApplication ( string targetFolder ) {
         }
     );
 }
-
-void HandleError ( string message ) {
-    Console.WriteLine ( message );
-    Console.WriteLine ( "Пожалуйста сообщите разработчику об ошибке в группу https://t.me/+Le_oNL4Tw745YWUy прислав скриншот этого экрана" );
-    Console.ReadKey ();
-    Environment.Exit ( 100 );
-}
-
-

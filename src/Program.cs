@@ -20,8 +20,8 @@ if ( args.Length != 0 ) {
 
 Console.WriteLine ( "AnilibriaQtInstaller version 0.0.1 started" );
 
-if ( !OperatingSystem.IsMacOS () ) {
-    // for linux and windows need to check runned application
+// for this action need to up privilege
+/*if ( !OperatingSystem.IsMacOS () ) {
     try {
         foreach ( var process in Process.GetProcessesByName ( "AniLibria" ) ) {
             process.Kill ();
@@ -29,7 +29,7 @@ if ( !OperatingSystem.IsMacOS () ) {
     } catch ( Exception ex ) {
         HandleError ( $"Can't kill instances of application: {ex.Message}" );
     }
-}
+}*/
 
 var httpClient = new HttpClient ();
 httpClient.DefaultRequestHeaders.Add ( "User-Agent", "Anilibria Installer" );

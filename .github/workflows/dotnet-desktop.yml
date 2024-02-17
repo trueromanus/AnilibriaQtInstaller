@@ -46,7 +46,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore src/TorrentStream.csproj
+      run: dotnet restore src/Installer.csproj
     - name: Publish x64 application
       run: dotnet publish -r osx-x64 -c Release --self-contained true src/Installer.csproj
     - name: Publish arm64 application

@@ -72,7 +72,7 @@ if ( OperatingSystem.IsWindows () ) {
     achiveFileName = latestRelease.TagName + ".zip";
 }
 
-if ( downloadAsset == null ) HandleError ( $"Can't find window asser for download!" );
+if ( downloadAsset == null ) HandleError ( $"Can't find asset for download!" );
 
 Console.WriteLine ( $"Start download archive/Скачивание архива пожалуйста подождите" );
 
@@ -90,13 +90,14 @@ var targetDirectory = Path.Combine ( latestRelease.TagName + "/" );
 
 Console.WriteLine ( $"Create directory for new version" );
 
-try {
-    if ( !Directory.Exists ( targetDirectory ) ) Directory.CreateDirectory ( targetDirectory );
-} catch ( Exception ex ) {
-    HandleError ( $"Error while creating directory {targetDirectory}: {ex.Message}" );
-}
-
 if ( OperatingSystem.IsWindows () ) {
+    Console.WriteLine ( $"Creating directory for new version" );
+    try {
+        if ( !Directory.Exists ( targetDirectory ) ) Directory.CreateDirectory ( targetDirectory );
+    } catch ( Exception ex ) {
+        HandleError ( $"Error while creating directory {targetDirectory}: {ex.Message}" );
+    }
+
     Console.WriteLine ( $"Extract archive to new version directory" );
     try {
         using var target = File.OpenRead ( achiveFileName );
@@ -108,17 +109,19 @@ if ( OperatingSystem.IsWindows () ) {
 }
 if ( OperatingSystem.IsMacOS () ) {
     Console.WriteLine ( $"Mount DMG file as virtual disk" );
-    await RunCommandInConsoleAndWait ( latestRelease.TagName, $"hdiutil attach {latestRelease.TagName}.dmg" );
+    await RunCommandInConsoleAndWait ( "", $"hdiutil attach {achiveFileName}" );
     //hdiutil detach /dev/disk1s2
 }
 if ( OperatingSystem.IsLinux () ) {
-    await RunCommandInConsoleAndWait ( latestRelease.TagName, $"flatpak install --user {latestRelease.TagName}.flatpak" );
+    await RunCommandInConsoleAndWait ( "", $"flatpak install --user {achiveFileName}" );
 }
 
-try {
-    File.Delete ( achiveFileName );
-} catch ( Exception ex ) {
-    HandleError ( $"Error while delete downloaded achive {achiveFileName}: {ex.Message}" );
+if ( OperatingSystem.IsWindows () || OperatingSystem.IsLinux () ) {
+    try {
+        File.Delete ( achiveFileName );
+    } catch ( Exception ex ) {
+        HandleError ( $"Error while delete downloaded achive {achiveFileName}: {ex.Message}" );
+    }
 }
 
 try {
@@ -132,13 +135,24 @@ RunAnilibriaApplication ( latestRelease.TagName );
 Console.WriteLine ( "Installer completed sucessfully" );
 
 static void RunAnilibriaApplication ( string targetFolder ) {
-    var executableFile = Path.Combine ( targetFolder, "AniLibria.exe" );
-    if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLibria.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath ( targetFolder )}" );
+    if ( OperatingSystem.IsWindows () ) {
+        var executableFile = Path.Combine ( targetFolder, "AniLibria.exe" );
+        if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLibria.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath ( targetFolder )}" );
 
-    Process.Start (
-        new ProcessStartInfo {
-            WorkingDirectory = targetFolder,
-            FileName = Path.Combine ( targetFolder, "AniLibria.exe" ),
-        }
-    );
+        Process.Start (
+            new ProcessStartInfo {
+                WorkingDirectory = targetFolder,
+                FileName = Path.Combine ( targetFolder, "AniLibria.exe" ),
+            }
+        );
+    }
+
+    if ( OperatingSystem.IsLinux () ) {
+        RunCommandInConsole ( "", $"flatpak run tv.anilibria.anilibria" );
+    }
+
+    if ( OperatingSystem.IsMacOS () ) {
+        //diskutil list
+        //TODO: run from mounted disk
+    }
 }

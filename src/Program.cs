@@ -20,17 +20,6 @@ if ( args.Length != 0 ) {
 
 Console.WriteLine ( "AnilibriaQtInstaller version 0.0.1 started" );
 
-// for this action need to up privilege
-/*if ( !OperatingSystem.IsMacOS () ) {
-    try {
-        foreach ( var process in Process.GetProcessesByName ( "AniLibria" ) ) {
-            process.Kill ();
-        }
-    } catch ( Exception ex ) {
-        HandleError ( $"Can't kill instances of application: {ex.Message}" );
-    }
-}*/
-
 var httpClient = new HttpClient ();
 httpClient.DefaultRequestHeaders.Add ( "User-Agent", "Anilibria Installer" );
 var data = await httpClient.GetStringAsync ( "https://api.github.com/repos/anilibria/anilibria-winmaclinux/releases/latest" );
@@ -109,12 +98,17 @@ if ( OperatingSystem.IsWindows () ) {
 }
 if ( OperatingSystem.IsMacOS () ) {
     Console.WriteLine ( $"Mount DMG file as virtual disk" );
-    await RunCommandInConsoleAndWait ( "", $"hdiutil attach {achiveFileName}" );
-    //hdiutil detach /dev/disk1s2
+    await RunCommandInConsoleAndWait ( $"xattr -d com.apple.quarantine {achiveFileName}" );
+    //unmount curren virtual disk if it was mounted
+    var listOutput = await RunCommandInConsoleAndWaitOutput ( $"hdiutil attach {achiveFileName}" );
+    var mountedDiskLine = listOutput.FirstOrDefault ( a => a.Contains ( "AniLibria" ) );
+    if ( mountedDiskLine != null ) {
+        mountedDiskLine = mountedDiskLine.Substring ( mountedDiskLine.LastIndexOf ( " " ) ).Trim();
+        await RunCommandInConsoleAndWait ( $"hdiutil detach {mountedDiskLine}" );
+    }
+    await RunCommandInConsoleAndWait ( $"hdiutil attach {achiveFileName}" );
 }
-if ( OperatingSystem.IsLinux () ) {
-    await RunCommandInConsoleAndWait ( "", $"flatpak install --user {achiveFileName}" );
-}
+if ( OperatingSystem.IsLinux () ) await RunCommandInConsoleAndWait ( $"flatpak install --user {achiveFileName}" );
 
 if ( OperatingSystem.IsWindows () || OperatingSystem.IsLinux () ) {
     try {
@@ -146,13 +140,6 @@ static void RunAnilibriaApplication ( string targetFolder ) {
             }
         );
     }
-
-    if ( OperatingSystem.IsLinux () ) {
-        RunCommandInConsole ( "", $"flatpak run tv.anilibria.anilibria" );
-    }
-
-    if ( OperatingSystem.IsMacOS () ) {
-        //diskutil list
-        //TODO: run from mounted disk
-    }
+    if ( OperatingSystem.IsLinux () ) RunCommandInConsole ( $"flatpak run tv.anilibria.anilibria" );
+    if ( OperatingSystem.IsMacOS () ) RunCommandInConsole ( $"/Volumes/AniLibria/AniLibria.app/Contents/MacOS/Anilibria" );
 }

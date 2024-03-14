@@ -2,11 +2,12 @@
 
 internal static class Helpers {
 
-    public static async Task RunCommandInConsoleAndWait ( string command, string targetFolder = "" ) {
+    public static async Task RunCommandInConsoleAndWait ( string command, string arguments, string targetFolder = "" ) {
         var process = Process.Start (
             new ProcessStartInfo {
                 WorkingDirectory = targetFolder,
                 FileName = command,
+                Arguments = arguments,
             }
         );
         if ( process == null ) HandleError ( "Can't run command: " + command );

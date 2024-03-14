@@ -77,8 +77,6 @@ try {
 
 var targetDirectory = Path.Combine ( latestRelease.TagName + "/" );
 
-Console.WriteLine ( $"Create directory for new version" );
-
 if ( OperatingSystem.IsWindows () ) {
     Console.WriteLine ( $"Creating directory for new version" );
     try {

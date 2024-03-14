@@ -16,11 +16,12 @@ internal static class Helpers {
         await process!.WaitForExitAsync ();
     }
 
-    public static async Task<List<string>> RunCommandInConsoleAndWaitOutput ( string command, string targetFolder = "" ) {
+    public static async Task<List<string>> RunCommandInConsoleAndWaitOutput ( string command, string arguments, string targetFolder = "" ) {
         var process = Process.Start (
             new ProcessStartInfo {
                 WorkingDirectory = targetFolder,
                 FileName = command,
+                Arguments = arguments,
                 RedirectStandardOutput = true
             }
         );

@@ -3,8 +3,8 @@ Expand-Archive -Path $env:USERPROFILE\Downloads\macosarm64.zip
 Expand-Archive -Path $env:USERPROFILE\Downloads\linux64.zip
 Expand-Archive -Path $env:USERPROFILE\Downloads\linuxarm64.zip
 
-&dotnet "publish -r win-x64 -c Release --self-contained true src/Installer.csproj"
-&dotnet "publish -r win-arm64 -c Release --self-contained true src/Installer.csproj"
+&"dotnet" publish -r win-x64 -c Release --self-contained true src/Installer.csproj
+&"dotnet" publish -r win-arm64 -c Release --self-contained true src/Installer.csproj
 
 New-Item -Name "deploy" -ItemType "directory"
 

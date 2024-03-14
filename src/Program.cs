@@ -100,13 +100,13 @@ if ( OperatingSystem.IsMacOS () ) {
     Console.WriteLine ( $"Mount DMG file as virtual disk" );
     await RunCommandInConsoleAndWait ( "xattr", $"-d com.apple.quarantine {achiveFileName}" );
     //unmount curren virtual disk if it was mounted
-    var listOutput = await RunCommandInConsoleAndWaitOutput ( "hdiutil", $"attach {achiveFileName}" );
+    var listOutput = await RunCommandInConsoleAndWaitOutput ( "hdiutil", "list" );
     var mountedDiskLine = listOutput.FirstOrDefault ( a => a.Contains ( "AniLibria" ) );
     if ( mountedDiskLine != null ) {
-        mountedDiskLine = mountedDiskLine.Substring ( mountedDiskLine.LastIndexOf ( " " ) ).Trim();
+        mountedDiskLine = mountedDiskLine.Substring ( mountedDiskLine.LastIndexOf ( " " ) ).Trim ();
         await RunCommandInConsoleAndWait ( "hdiutil", $"detach {mountedDiskLine}" );
     }
-    await RunCommandInConsoleAndWait ( "hdiutil", "attach { achiveFileName}" );
+    await RunCommandInConsoleAndWait ( "hdiutil", $"attach {achiveFileName}" );
 }
 if ( OperatingSystem.IsLinux () ) await RunCommandInConsoleAndWait ( "flatpak", $"install --user {achiveFileName}" );
 
@@ -140,6 +140,6 @@ static void RunAnilibriaApplication ( string targetFolder ) {
             }
         );
     }
-    if ( OperatingSystem.IsLinux () ) RunCommandInConsole ( $"flatpak run tv.anilibria.anilibria" );
-    if ( OperatingSystem.IsMacOS () ) RunCommandInConsole ( $"/Volumes/AniLibria/AniLibria.app/Contents/MacOS/Anilibria" );
+    if ( OperatingSystem.IsLinux () ) RunCommandInConsole ( "flatpak", "run tv.anilibria.anilibria" );
+    if ( OperatingSystem.IsMacOS () ) RunCommandInConsole ( "/Volumes/AniLibria/AniLibria.app/Contents/MacOS/Anilibria", "" );
 }

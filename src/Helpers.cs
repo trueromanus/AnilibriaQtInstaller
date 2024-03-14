@@ -3,6 +3,9 @@
 internal static class Helpers {
 
     public static async Task RunCommandInConsoleAndWait ( string command, string arguments, string targetFolder = "" ) {
+
+        Console.WriteLine ( "ProcessStart command: " + command );
+        Console.WriteLine ( "ProcessStart arguments: " + arguments );
         var process = Process.Start (
             new ProcessStartInfo {
                 WorkingDirectory = targetFolder,
@@ -12,12 +15,13 @@ internal static class Helpers {
         );
         if ( process == null ) HandleError ( "Can't run command: " + command );
 
-        //process.OutputDataReceived
-
         await process!.WaitForExitAsync ();
     }
 
     public static async Task<List<string>> RunCommandInConsoleAndWaitOutput ( string command, string arguments, string targetFolder = "" ) {
+        Console.WriteLine ( "ProcessStart command: " + command );
+        Console.WriteLine ( "ProcessStart arguments: " + arguments );
+
         var process = Process.Start (
             new ProcessStartInfo {
                 WorkingDirectory = targetFolder,
@@ -43,11 +47,12 @@ internal static class Helpers {
         return result;
     }
 
-    public static void RunCommandInConsole ( string command, string targetFolder = "" ) {
+    public static void RunCommandInConsole ( string command, string arguments, string targetFolder = "" ) {
         var process = Process.Start (
             new ProcessStartInfo {
                 WorkingDirectory = targetFolder,
                 FileName = command,
+                Arguments = arguments,
             }
         );
         if ( process == null ) HandleError ( "Can't run command: " + command );

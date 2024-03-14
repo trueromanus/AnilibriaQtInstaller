@@ -100,7 +100,7 @@ if ( OperatingSystem.IsMacOS () ) {
     Console.WriteLine ( $"Mount DMG file as virtual disk" );
     await RunCommandInConsoleAndWait ( "xattr", $"-d com.apple.quarantine {achiveFileName}" );
     //unmount curren virtual disk if it was mounted
-    var listOutput = await RunCommandInConsoleAndWaitOutput ( "hdiutil", "list" );
+    var listOutput = await RunCommandInConsoleAndWaitOutput ( "diskutil", "list" );
     var mountedDiskLine = listOutput.FirstOrDefault ( a => a.Contains ( "AniLibria" ) );
     if ( mountedDiskLine != null ) {
         mountedDiskLine = mountedDiskLine.Substring ( mountedDiskLine.LastIndexOf ( " " ) ).Trim ();

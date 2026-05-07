@@ -18,10 +18,16 @@ if ( args.Length != 0 ) {
     }
 }
 
-Console.WriteLine ( "AnilibriaQtInstaller version 0.0.1 started" );
+Console.WriteLine ("AniLibertyQtInstaller version 0.0.2 started");
 
-var httpClient = new HttpClient ();
-httpClient.DefaultRequestHeaders.Add ( "User-Agent", "Anilibria Installer" );
+var handler = new HttpClientHandler()
+{
+    AllowAutoRedirect = true,
+    MaxAutomaticRedirections = 10
+};
+var httpClient = new HttpClient (handler);
+httpClient.DefaultRequestHeaders.Add ( "User-Agent", "AniLiberty Installer");
+
 var data = await httpClient.GetStringAsync ( "https://api.github.com/repos/anilibria/anilibria-winmaclinux/releases/latest" );
 var latestRelease = JsonSerializer.Deserialize ( data, typeof ( VersionResponse ), ResponseContext.Default ) as VersionResponse;
 if ( latestRelease == null ) {
@@ -45,7 +51,7 @@ var achiveFileName = "";
 VersionAsset? downloadAsset = null;
 
 if ( OperatingSystem.IsMacOS () ) {
-    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ( "macos" ) );
+    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ("AniLiberty") );
 
     achiveFileName = latestRelease.TagName + ".dmg";
 }
@@ -56,7 +62,7 @@ if ( OperatingSystem.IsLinux () ) {
     achiveFileName = latestRelease.TagName + ".flatpak";
 }
 if ( OperatingSystem.IsWindows () ) {
-    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ( "windows" ) );
+    downloadAsset = latestRelease.Assets.FirstOrDefault ( a => a.Name.Contains ("aniliberty_win") );
 
     achiveFileName = latestRelease.TagName + ".zip";
 }
@@ -128,16 +134,16 @@ Console.WriteLine ( "Installer completed sucessfully" );
 
 static void RunAnilibriaApplication ( string targetFolder ) {
     if ( OperatingSystem.IsWindows () ) {
-        var executableFile = Path.Combine ( targetFolder, "AniLibria.exe" );
-        if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLibria.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath ( targetFolder )}" );
+        var executableFile = Path.Combine ( targetFolder, "AniLiberty.exe");
+        if ( !File.Exists ( executableFile ) ) HandleError ( $"Файл AniLiberty.exe с указанной выше версией не найден на диске! Он должен быть в папке {Path.GetFullPath ( targetFolder )}" );
 
         Process.Start (
             new ProcessStartInfo {
                 WorkingDirectory = targetFolder,
-                FileName = Path.Combine ( targetFolder, "AniLibria.exe" ),
+                FileName = Path.Combine ( targetFolder, "AniLiberty.exe"),
             }
         );
     }
     if ( OperatingSystem.IsLinux () ) RunCommandInConsole ( "flatpak", "run tv.anilibria.anilibria" );
-    if ( OperatingSystem.IsMacOS () ) RunCommandInConsole ( "/Volumes/AniLibria/AniLibria.app/Contents/MacOS/Anilibria", "" );
+    if ( OperatingSystem.IsMacOS () ) RunCommandInConsole ("/Volumes/AniLiberty/AniLiberty.app/Contents/MacOS/AniLiberty", "" );
 }
